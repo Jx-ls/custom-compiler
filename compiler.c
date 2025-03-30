@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 typedef struct {
@@ -9,7 +10,7 @@ typedef struct {
 
 
 // look through the entire document, if print is found create a token.
-void lexer (char *file, token tokens[]) {
+void lexer (char *file, token tokens[], int *num_of_tokens) {
 	char keyprint[] = "print";
 	int tokennum = 0;
 	int str_index = 0;
@@ -47,6 +48,13 @@ void lexer (char *file, token tokens[]) {
 			str_index++;
 		}
 	}
+	*num_of_tokens = tokennum;
+}
+
+void code_gen (token tokens[], int num_of_tokens, FILE *output) {
+	for (int i = 0; i < num_of_tokens; i++) {
+		if (tokens[i].keyword == "print") fprintf(output, "\tprintf(\"%s\");\n", tokens[i].value);
+	}
 }
 
 
@@ -67,15 +75,32 @@ int main (int argc, char *argv[]) {
 		printf("memory allocation failed.\n");
 		return 1;
 	}
-
+	
 	fread(file, 1, file_size, fptr);
 	file[file_size] = '\0';
 
+	char file_name[50];
+	for (int i = 0; argv[1][i] != '.'; i++) {
+		file_name[i] = argv[1][i];
+	}
+	strcat(file_name, ".c");
+	
 	token tokens[50]; // for small programs we assume a maximum of 50 tokens
-	lexer(file, tokens);
-	for (int i = 0; i < 2; i++) {
+	int num_of_tokens;
+	lexer(file, tokens, &num_of_tokens);
+	for (int i = 0; i < num_of_tokens; i++) {
 		printf("%s: %s\n", tokens[i].keyword, tokens[i].value);
 	}
+	
+	FILE *output = fopen(file_name, "w");
+	
+	fputs("#include <stdio.h>\n", output);
+	fputs("int main () {\n", output);
+
+	code_gen(tokens, num_of_tokens, output);
+
+	fputs("\treturn 0;\n", output);
+	fputs("}\n", output);
 	free(file);
 	fclose(fptr);
 	return 0;
