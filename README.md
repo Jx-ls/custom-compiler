@@ -9,7 +9,7 @@ print "Hello World!!"
 ```
 > Hello World!!
 ```
-## the absurd part is that u can even do something like this
+## You can even do something like this :)
 ```
 hello world can u print this statement "Hello World!!!" insanee thx.
 ```
