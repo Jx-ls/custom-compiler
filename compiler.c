@@ -3,6 +3,7 @@
 #include <string.h>
 
 
+// token struct
 typedef struct {
 	char *keyword;
 	char *value;
@@ -51,6 +52,8 @@ void lexer (char *file, token tokens[], int *num_of_tokens) {
 	*num_of_tokens = tokennum;
 }
 
+
+// replaces the tokens with actual code
 void code_gen (token tokens[], int num_of_tokens, FILE *output) {
 	for (int i = 0; i < num_of_tokens; i++) {
 		if (tokens[i].keyword == "print") fprintf(output, "\tprintf(\"%s\\n\");\n", tokens[i].value);
@@ -60,39 +63,46 @@ void code_gen (token tokens[], int num_of_tokens, FILE *output) {
 
 int main (int argc, char *argv[]) {
 	
+	// read the .espn file
 	FILE *fptr = fopen(argv[1], "r");
 	if (fptr == NULL) {
 		printf("could'nt access file.\n");
 		return 1;
 	}
-
+	
+	// get the filesize
 	fseek(fptr, 0, SEEK_END);
 	long file_size = ftell(fptr);
 	fseek(fptr, 0, SEEK_SET);
 	
+	// malloc a char pointer to copy the file to
 	char *file = malloc(file_size + 1);
 	if (file == NULL) {
 		printf("memory allocation failed.\n");
 		return 1;
 	}
 	
+	// copy the file to char pointer
 	fread(file, 1, file_size, fptr);
 	file[file_size] = '\0';
-
+	
+	// define the filenames which we will create
 	char file_name[50];
-	char exe_file_name[50];
+	char filename[50];
 	for (int i = 0; argv[1][i] != '.'; i++) {
 		file_name[i] = argv[1][i];
-		exe_file_name[i] = argv[1][i];
+		filename[i] = argv[1][i];
 	}
-	strcat(file_name, ".c\0");
-	strcat(exe_file_name, ".o\0");
+	strcat(file_name, ".c");
+
+	/* tokenization step of frontend */
+
 	token tokens[50]; // for small programs we assume a maximum of 50 tokens
 	int num_of_tokens;
 	lexer(file, tokens, &num_of_tokens);
-	for (int i = 0; i < num_of_tokens; i++) {
-		printf("%s: %s\n", tokens[i].keyword, tokens[i].value);
-	}
+
+
+	/* code generation step of frontend */
 	
 	FILE *output = fopen(file_name, "w");
 	
@@ -107,5 +117,22 @@ int main (int argc, char *argv[]) {
 	fclose(output);
 	free(file);
 	fclose(fptr);
+	
+	/* running gcc as backend lmao*/
+
+	char command[50] = "gcc ";
+	strcat(command, filename);
+	strcat(command, ".c -o ");
+	strcat(command, filename);
+	strcat(command, ".o");
+	
+	system(command);
+	
+	/* // to show the tokens creates
+	for (int i = 0; i < num_of_tokens; i++) {
+		printf("%s: %s\n", tokens[i].keyword, tokens[i].value);
+	}
+	*/
+
 	return 0;
 }
