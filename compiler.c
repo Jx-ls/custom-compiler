@@ -53,7 +53,7 @@ void lexer (char *file, token tokens[], int *num_of_tokens) {
 
 void code_gen (token tokens[], int num_of_tokens, FILE *output) {
 	for (int i = 0; i < num_of_tokens; i++) {
-		if (tokens[i].keyword == "print") fprintf(output, "\tprintf(\"%s\");\n", tokens[i].value);
+		if (tokens[i].keyword == "print") fprintf(output, "\tprintf(\"%s\\n\");\n", tokens[i].value);
 	}
 }
 
@@ -80,11 +80,13 @@ int main (int argc, char *argv[]) {
 	file[file_size] = '\0';
 
 	char file_name[50];
+	char exe_file_name[50];
 	for (int i = 0; argv[1][i] != '.'; i++) {
 		file_name[i] = argv[1][i];
+		exe_file_name[i] = argv[1][i];
 	}
-	strcat(file_name, ".c");
-	
+	strcat(file_name, ".c\0");
+	strcat(exe_file_name, ".o\0");
 	token tokens[50]; // for small programs we assume a maximum of 50 tokens
 	int num_of_tokens;
 	lexer(file, tokens, &num_of_tokens);
@@ -101,6 +103,8 @@ int main (int argc, char *argv[]) {
 
 	fputs("\treturn 0;\n", output);
 	fputs("}\n", output);
+
+	fclose(output);
 	free(file);
 	fclose(fptr);
 	return 0;
