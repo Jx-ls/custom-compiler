@@ -1,4 +1,4 @@
-# koss-compilers-task
+# A compiler made in C Programming language
 - I have made my own programming language and its compiler.
 - It can only print statements.
 ## Syntax
